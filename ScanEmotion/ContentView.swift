@@ -1,21 +1,19 @@
-//
-//  ContentView.swift
-//  ScanEmotion
-//
-//  Created by Engin Bolat on 14.06.2025.
-//
-
 import SwiftUI
+import CoreML
+import UIKit
 
 struct ContentView: View {
+     @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            if isLoggedIn {
+                HomeView()
+            }
+            else {
+                LoginView()
+            }
         }
-        .padding()
     }
 }
 

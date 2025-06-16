@@ -10,9 +10,22 @@
 		D2AA0FE82DFD7D70000F85AC /* ScanEmotion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanEmotion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D232B48F2DFDA3940082A868 /* Exceptions for "ScanEmotion" folder in "ScanEmotion" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Info.plist,
+			);
+			target = D2AA0FE72DFD7D70000F85AC /* ScanEmotion */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D2AA0FEA2DFD7D70000F85AC /* ScanEmotion */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D232B48F2DFDA3940082A868 /* Exceptions for "ScanEmotion" folder in "ScanEmotion" target */,
+			);
 			path = ScanEmotion;
 			sourceTree = "<group>";
 		};
@@ -32,8 +45,8 @@
 		D2AA0FDF2DFD7D6F000F85AC = {
 			isa = PBXGroup;
 			children = (
-				D2AA0FEA2DFD7D70000F85AC /* ScanEmotion */,
 				D2AA0FE92DFD7D70000F85AC /* Products */,
+				D2AA0FEA2DFD7D70000F85AC /* ScanEmotion */,
 			);
 			sourceTree = "<group>";
 		};
@@ -251,8 +264,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JV7N3RT6H2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScanEmotion/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Scan Emotion";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -278,8 +294,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JV7N3RT6H2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScanEmotion/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Scan Emotion";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
