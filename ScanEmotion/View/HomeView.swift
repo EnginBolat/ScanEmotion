@@ -8,12 +8,18 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject var viewModel = HomeViewModel()
+    @ObservedObject var viewModel: HomeViewModel
+    
+    init(viewModel: HomeViewModel) {
+        self.viewModel = viewModel
+    }
     
     var body: some View {
         VStack() {
             HomeHeaderView(title: viewModel.greetingText())
-            HomeMeasurementSectionView(data: viewModel.data,onItemPress: viewModel.onItemPress)
+            HomeMeasurementSectionView(data: viewModel.data,
+                onItemPress: viewModel.onItemPress
+            )
             ButtonWithLabel(label: "Ölçüm Yap",
                             onPress: { viewModel.updateSheetType(key: .optionSelection) },
                             isButtonDisabled: false,
@@ -34,13 +40,13 @@ struct HomeView: View {
                 ImagePicker(
                     image: $viewModel.image,
                     sourceType: .camera,
-                    onImagePicked: viewModel.classifyImage
+                    onImagePicked: viewModel.classifyImageSync
                 ).ignoresSafeArea()
             case .gallery:
                 ImagePicker(
                     image: $viewModel.image,
                     sourceType: .photoLibrary,
-                    onImagePicked: viewModel.classifyImage
+                    onImagePicked: viewModel.classifyImageSync
                 ).ignoresSafeArea()
             case .details:
                 DetailsView(measurement: viewModel.selectedMeasurement!)
@@ -55,5 +61,6 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    @StateObject var viewModel: HomeViewModel = .init()
+    HomeView(viewModel: viewModel)
 }

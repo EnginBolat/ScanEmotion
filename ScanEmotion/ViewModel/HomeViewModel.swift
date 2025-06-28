@@ -21,7 +21,7 @@ protocol HomeViewModelProtocol: ObservableObject {
     
     func greetingText() -> String
     func onMeasureButtonPress() -> Void
-    func classifyImage(_ uiImage: UIImage)
+    func classifyImage(_ uiImage: UIImage) async
 }
 
 final class HomeViewModel: HomeViewModelProtocol {
@@ -38,17 +38,28 @@ final class HomeViewModel: HomeViewModelProtocol {
     @Published var predictionText: String = ""
     
     init() {
-        
-        if let jsonString: String = AppStorageService.shared.value(forKey: .measurements) ?? "",
-           let jsonData = jsonString.data(using: .utf8) {
-            let storedMeasurements = try? JSONDecoder().decode([Measurement].self, from: jsonData)
-            self.data = storedMeasurements ?? []
-        } else {
-            self.data = []
-        }
-        self.username = AppStorageService.shared.value(forKey: .name) ?? ""
-        
+        self.username = FirebaseService.shared.currentUser?.displayName ?? ""
+        fetchDataFromFirebase()
     }
+    
+    private func fetchDataFromFirebase() {
+        Task { [weak self] in
+            
+            guard let self = self else { return }
+
+            let measurements: [Measurement]
+            if let uid = FirebaseService.shared.currentUID {
+                measurements = await FirebaseService.shared.getAllMeasurements(uid: uid)
+            } else {
+                measurements = []
+            }
+
+            await MainActor.run {
+                self.data = measurements
+            }
+        }
+    }
+    
     
     func greetingText() -> String {
         if username.isEmpty { return "Hoşgeldin!" }
@@ -68,60 +79,81 @@ final class HomeViewModel: HomeViewModelProtocol {
         selectedSheet = .details
     }
     
-    func classifyImage(_ uiImage: UIImage) {
-        guard let inputArray = imageToMultiArray(image: uiImage) else {
-            predictionText = "Görüntü dönüştürülemedi."
-            return
-        }
-
-        do {
-            let model = try EmotionModel()
-            let prediction = try model.prediction(inputs: inputArray)
-            let raw = prediction.Identity
-            let logits = (0..<raw.count).map { raw[$0].floatValue }
-            let expValues = logits.map { exp($0) }
-            let sumExp = expValues.reduce(0, +)
-            let probabilities = expValues.map { $0 / sumExp }
-
-            let labels = ["Kızgın", "İğrenme", "Korku", "Mutlu", "Üzgün", "Şaşırmışlık", "Doğallık"]
-            let result = zip(labels, probabilities)
-                .map { "\($0): \(String(format: "%.2f", $1 * 100))%" }
-                .joined(separator: "\n")
-
-            predictionText = result
+    @MainActor
+    func addMeasurementToFirestore(_ measurement: Measurement) async -> String {
+            let currentUserSession = await FirebaseService.shared.checkUserSession()
+            guard let currentUser = currentUserSession else { return "" }
             
+            let addMeasurementResult = await FirebaseService.shared.addMeasurementToFirebase(
+                uid: currentUser.uid!,
+                measurement: measurement
+            )
+            if addMeasurementResult != "error" {
+                return addMeasurementResult
+            }
+            else {
+                return ""
+            }
+    }
+    
+    
+    func classifyImageSync(_ uiImage: UIImage) {
+        Task {
+            await classifyImage(uiImage)
+        }
+    }
+    
+    @MainActor
+    private func setAndUploadMeasurement(probabilities: Array<Float>, labels: Array<String>) {
+        Task {
             if let maxIndex = probabilities.firstIndex(of: probabilities.max() ?? 0.0) {
-                       let dominantEmotion = labels[maxIndex]
-                        let dominantValue = probabilities[maxIndex]
-                       
-                       let newElement = Measurement(
-                           angry: probabilities[0],
-                           disgust: probabilities[1],
-                           fear: probabilities[2],
-                           happy: probabilities[3],
-                           sad: probabilities[4],
-                           surprised: probabilities[5],
-                           spontaneity: probabilities[6],
-                           mainEmotion: MainEmotion(name: dominantEmotion, value: dominantValue)
-                       )
-
-                       data.append(newElement)
+                let dominantEmotion = labels[maxIndex]
+                let dominantValue = probabilities[maxIndex]
                 
-                // Veriyi LocalStorage'a kaydet
-                let encoder = JSONEncoder()
-                if let encodedData = try? encoder.encode(data),
-                   let encodedString = String(data: encodedData, encoding: .utf8) {
-                    AppStorageService.shared.set(encodedString, forKey: .measurements)
-                }
-                
-                
+                var newElement = Measurement(
+                    angry: probabilities[0],
+                    disgust: probabilities[1],
+                    fear: probabilities[2],
+                    happy: probabilities[3],
+                    sad: probabilities[4],
+                    surprised: probabilities[5],
+                    spontaneity: probabilities[6],
+                    mainEmotion: MainEmotion(name: dominantEmotion, value: dominantValue)
+                )
+                let documentId = await addMeasurementToFirestore(newElement)
+                newElement.id = documentId
+                data.append(newElement)
                 
             } else {
                 predictionText = "Baskın duygu tespit edilemedi."
             }
-            
-        } catch {
-            predictionText = "Tahmin yapılamadı: \(error.localizedDescription)"
         }
     }
+    
+    @MainActor
+    func classifyImage(_ uiImage: UIImage) async {
+            guard let inputArray = imageToMultiArray(image: uiImage) else {
+                predictionText = "Görüntü dönüştürülemedi."
+                return
+            }
+
+            do {
+                let model = try EmotionModel()
+                let prediction = try model.prediction(inputs: inputArray)
+                let raw = prediction.Identity
+                let logits = (0..<raw.count).map { raw[$0].floatValue }
+                let expValues = logits.map { exp($0) }
+                let sumExp = expValues.reduce(0, +)
+                let probabilities = expValues.map { $0 / sumExp }
+                
+                let result = zip(AppConstants.emotions, probabilities)
+                    .map { "\($0): \(String(format: "%.2f", $1 * 100))%" }
+                    .joined(separator: "\n")
+
+                predictionText = result
+                setAndUploadMeasurement(probabilities: probabilities, labels: AppConstants.emotions)
+            } catch {
+                predictionText = "Tahmin yapılamadı: \(error.localizedDescription)"
+            }
+        }
 }

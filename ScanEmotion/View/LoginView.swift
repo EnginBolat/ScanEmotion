@@ -12,8 +12,13 @@ enum Field: Hashable {
 }
 
  struct LoginView: View {
-     @StateObject var viewModel = LoginViewModel()
+     @StateObject var viewModel: LoginViewModel
      @FocusState private var focusedField: Field?
+     
+     init(appRouter: AppRouter, userSession: UserSession) {
+         _viewModel = StateObject(wrappedValue: LoginViewModel(appRouter: appRouter, userSession: userSession))
+     }
+
      
      var body: some View {
          VStack(alignment: .center, spacing: 8) {
@@ -22,10 +27,10 @@ enum Field: Hashable {
              Input(
                 placeholder: "E-posta",
                 LeftIcon: Image(systemName: "envelope"),
+                autocapitalization: .never,
                 isPasswordSecured: .constant(false),
                 text: $viewModel.email
-             )
-             // .onChange(of: viewModel.email) { _ in viewModel.updateButtonState() }
+             ).onChange(of: viewModel.email) { _ in viewModel.updateButtonState() }
              
              if let emailError = viewModel.emailError {
                  Text(emailError)
@@ -44,8 +49,10 @@ enum Field: Hashable {
                 isPasswordSecured: $viewModel.isPasswordSecured,
                 text: $viewModel.password,
              )
+            
              
-             ButtonWithLabel(label:"Giriş Yap", onPress: viewModel.signIn, isButtonDisabled: viewModel.isButtonDisabled)
+             // ButtonWithLabel(label:"Giriş Yap", onPress: viewModel.signIn, isButtonDisabled: viewModel.isButtonDisabled)
+             ButtonWithLabel(label:"Giriş Yap", onPress: viewModel.signIn, isButtonDisabled: false)
              
              Spacer()
              
@@ -65,9 +72,5 @@ enum Field: Hashable {
  }
 
 #Preview {
-    LoginView()
+    LoginView(appRouter: AppRouter(), userSession: UserSession())
 }
-
-
-
-

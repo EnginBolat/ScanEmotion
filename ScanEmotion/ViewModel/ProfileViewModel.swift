@@ -14,11 +14,37 @@ protocol ProfileViewModelProtocol: ObservableObject {
 }
 
 final class ProfileViewModel: ProfileViewModelProtocol {
-    @Published var name: String = AppStorageService.shared.value(forKey: .name) ?? ""
-    @Published var surname: String = AppStorageService.shared.value(forKey: .surname) ?? ""
-    @Published var email: String = AppStorageService.shared.value(forKey: .email) ?? ""
+    @Published var name: String = ""
+    @Published var surname: String = ""
+    @Published var email: String = ""
+    
+    private var userSession: UserSession
+    private var appRoute: AppRouter
+    
+    init(userSession: UserSession, appRoute: AppRouter) {
+        self.userSession = userSession
+        self.appRoute = appRoute
+        
+        setupInputs()
+    }
+    
+    private func setupInputs() {
+        name = userSession.name
+        surname = userSession.surname
+        email = userSession.email
+    }
     
     func signOut() {
-        AppStorageService.shared.resetAll()
+        FirebaseService.shared.signOut() { result in
+            switch result {
+            case .success:
+                AppStorageService.shared.resetAll()
+                self.userSession.isLoggedIn = false
+                self.appRoute.currentScreen = .login
+                break
+            case .failure(let error):
+                break
+            }
+        }
     }
 }

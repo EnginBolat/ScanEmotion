@@ -11,6 +11,11 @@ struct HomeLastMeasurementsView: View {
     let data: [Measurement]
     let onItemPress: (Measurement) -> Void
     
+    init(data: [Measurement], onItemPress: @escaping (Measurement) -> Void) {
+        self.data = data
+        self.onItemPress = onItemPress
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
             if data.isEmpty {
@@ -19,7 +24,7 @@ struct HomeLastMeasurementsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(EdgeInsets(top: 32, leading: 0, bottom: 32, trailing: 0))
             } else {
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 8) {
                         ForEach(data.prefix(10), id: \.id) { item in
                             measurementCard(for: item)
@@ -61,6 +66,6 @@ struct HomeLastMeasurementsView: View {
                 mainEmotion: MainEmotion(name: "Happy", value: 1.0)
             )
         ],
-        onItemPress: { measurement in print(measurement) }
+        onItemPress: { _ in }
     ).padding(AppConstants.padding)
 }

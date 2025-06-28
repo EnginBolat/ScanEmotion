@@ -11,6 +11,11 @@ struct MeasurementCard: View {
     let item: Measurement
     let onItemPress: (Measurement) -> Void
     
+    init(item: Measurement, onItemPress: @escaping (Measurement) -> Void) {
+        self.item = item
+        self.onItemPress = onItemPress
+    }
+    
     var body: some View {
         Button(action: { onItemPress(item) }) {
             HStack {

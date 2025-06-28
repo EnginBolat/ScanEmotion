@@ -17,6 +17,7 @@ struct Input: View {
     var RightIcon: Image?
     var rightButtonPressed: (() -> Void)?
     
+    var autocapitalization: TextInputAutocapitalization?
     var isSecure: Bool = false
     @Binding var isPasswordSecured: Bool
     @Binding var text: String
@@ -33,6 +34,7 @@ struct Input: View {
                     SecureField(placeholder, text: $text)
                 } else {
                     TextField(placeholder, text: $text)
+                        .textInputAutocapitalization(autocapitalization)
                 }
             }
             .frame(height: 20)

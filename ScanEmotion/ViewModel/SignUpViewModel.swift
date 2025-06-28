@@ -16,6 +16,7 @@ protocol SignUpViewModelProtocol: ObservableObject {
     
     func onSignUp() -> Void
     func isButtonDisabled() -> Bool
+    func signUpSync() async -> Void
 }
 
 final class SignUpViewModel: SignUpViewModelProtocol {
@@ -25,13 +26,53 @@ final class SignUpViewModel: SignUpViewModelProtocol {
     @Published var password: String = ""
     @Published var isPasswordSecured: Bool = true
     
+     var appRouter: AppRouter
+
+       init(appRouter: AppRouter) {
+           self.appRouter = appRouter
+       }
+
+    
     func onSignUp() {
-        AppStorageService.shared.set(name, forKey: .name)
-        AppStorageService.shared.set(surname, forKey: .surname)
-        AppStorageService.shared.set(email, forKey: .email)
-        
-        AppStorageService.shared.set(true, forKey: .isLoggedIn)
+        Task {
+            await signUpSync()
+            self.appRouter.currentScreen = .home
+        }
     }
+    
+    func signUpSync() async {
+        let displayName = "\(name) \(surname)"
+        
+            await FirebaseService.shared.signUp(email: email, password: password, name: displayName) { result in
+                switch result {
+                case .success(let status):
+                    if status {
+                        guard let uid = FirebaseService.shared.currentUID else { return }
+                        self.addUserToFirebase(uid)
+                    }
+                case .failure(let error):
+                    print("Error signing up: \(error)")
+                }
+            }
+    }
+    
+    func addUserToFirebase(_ uid: String) {
+        Task {
+            await FirebaseService.shared.addUserToFirebase(
+                uid: uid,
+                name: self.name,
+                surname: self.surname,
+                email: self.email
+            )
+        }
+            
+            AppStorageService.shared.set(self.name, forKey: .name)
+            AppStorageService.shared.set(self.surname, forKey: .surname)
+            AppStorageService.shared.set(self.email, forKey: .email)
+            AppStorageService.shared.set(true, forKey: .isLoggedIn)
+    }
+    
+    
     
     func isButtonDisabled() -> Bool {
         name.isEmpty || surname.isEmpty || email.isEmpty || password.isEmpty

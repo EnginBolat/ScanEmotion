@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 struct MainEmotion: Codable {
     let name:String
@@ -13,7 +14,8 @@ struct MainEmotion: Codable {
 }
 
 struct Measurement: Identifiable, Codable {
-    let id: UUID
+    @DocumentID var id: String?  // Firestore'dan DocumentID otomatik gelir
+
     let mainEmotion: MainEmotion
     let angry: Float
     let disgust: Float
@@ -22,10 +24,12 @@ struct Measurement: Identifiable, Codable {
     let sad: Float
     let surprised: Float
     let spontaneity: Float
-    var date: Date = Date()
+    let date: Date
+    let isDeleted: Bool
 
+    // Manual initializer (uygulamada yeni Measurement oluştururken)
     init(
-        id: UUID = UUID(),
+        id: String? = nil,
         angry: Float,
         disgust: Float,
         fear: Float,
@@ -33,7 +37,9 @@ struct Measurement: Identifiable, Codable {
         sad: Float,
         surprised: Float,
         spontaneity: Float,
-        mainEmotion: MainEmotion
+        mainEmotion: MainEmotion,
+        date: Date = Date(),
+        isDeleted: Bool = false
     ) {
         self.id = id
         self.angry = angry
@@ -44,5 +50,25 @@ struct Measurement: Identifiable, Codable {
         self.surprised = surprised
         self.spontaneity = spontaneity
         self.mainEmotion = mainEmotion
+        self.date = date
+        self.isDeleted = isDeleted
+    }
+    
+    var asDictionary: [String: Any] {
+        return [
+            "angry": angry,
+            "disgust": disgust,
+            "fear": fear,
+            "happy": happy,
+            "sad": sad,
+            "surprised": surprised,
+            "spontaneity": spontaneity,
+            "mainEmotion": [
+                "name": mainEmotion.name,
+                "value": mainEmotion.value
+            ],
+            "date": Timestamp(date: date),
+            "isDeleted": isDeleted
+        ]
     }
 }

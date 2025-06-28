@@ -8,7 +8,12 @@
 import SwiftUI
 
 struct SignUpView : View {
-    @StateObject var viewModel = SignUpViewModel()
+    @EnvironmentObject var appRouter: AppRouter
+    @StateObject var viewModel: SignUpViewModel
+
+    init() {
+          _viewModel = StateObject(wrappedValue: SignUpViewModel(appRouter: AppRouter()))
+      }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -27,6 +32,7 @@ struct SignUpView : View {
             Input(
                 placeholder: "E-posta",
                 LeftIcon: Image(systemName: "envelope"),
+                autocapitalization: .never,
                 isPasswordSecured: .constant(false),
                 text: $viewModel.email
             )
@@ -41,10 +47,18 @@ struct SignUpView : View {
             )
             
             ButtonWithLabel(label: "Kayıt Ol",
+                            onPress: {
+                viewModel.appRouter.currentScreen = .home
+            },
+                            isButtonDisabled: false
+            )
+            
+            ButtonWithLabel(label: "Kayıt Ol",
                             onPress: viewModel.onSignUp,
                             isButtonDisabled: viewModel.isButtonDisabled()
             )
         }.padding(AppConstants.padding)
+            .onAppear { viewModel.appRouter = appRouter }
     }
 }
 

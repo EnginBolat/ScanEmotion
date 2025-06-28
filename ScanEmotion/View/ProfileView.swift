@@ -8,11 +8,21 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @StateObject var viewModel = ProfileViewModel()
+    @EnvironmentObject var userSession: UserSession
+    @StateObject var viewModel: ProfileViewModel
+    
+    init(appRouter: AppRouter, userSession: UserSession) {
+        _viewModel = StateObject(wrappedValue: ProfileViewModel(userSession: userSession, appRoute: appRouter))
+    }
     
     var body: some View {
         VStack(spacing: 12) {
-            ProfileInitialCharacterProfileView( nameFirstKey: String(viewModel.name.prefix(1)), surnameFirstKey: String(viewModel.surname.prefix(1)))
+            ProfileInitialCharacterProfileView(
+                nameFirstKey: String(viewModel.name.prefix(1)),
+                surnameFirstKey: String(viewModel.surname.prefix(1)),
+                photoUrl: userSession.image
+            )
+            
             VStack(alignment: .leading) {
                 Text("Ad")
                 Input(isPasswordSecured: .constant(false), text: $viewModel.name)
@@ -34,6 +44,6 @@ struct ProfileView: View {
 
 
 #Preview {
-    ProfileView()
+    ProfileView(appRouter: AppRouter(), userSession: UserSession())
 }
 

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct HomeHeaderView: View {
+    @EnvironmentObject var userSession: UserSession
+    @EnvironmentObject var router: AppRouter
     let title: String
     
     var body: some View {
@@ -17,7 +19,7 @@ struct HomeHeaderView: View {
                 .bold()
                 .frame(maxWidth: .infinity, alignment: .leading)
             
-            NavigationLink(destination: ProfileView()) {
+            NavigationLink(destination: ProfileView(appRouter: router, userSession: userSession)) {
                 Image(systemName: "person.circle")
                     .resizable()
                     .frame(width: 24,height: 24)

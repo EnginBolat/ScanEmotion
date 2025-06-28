@@ -3,20 +3,17 @@ import CoreML
 import UIKit
 
 struct ContentView: View {
-     @AppStorage("isLoggedIn") var isLoggedIn: Bool = false
+    @EnvironmentObject var userSession: UserSession
+    @EnvironmentObject var router: AppRouter
     
     var body: some View {
-        NavigationStack {
-            if isLoggedIn {
-                HomeView()
-            }
-            else {
-                LoginView()
-            }
+        switch router.currentScreen {
+        case .login: NavigationStack { LoginView(appRouter: router, userSession: userSession) }
+        case .home: NavigationStack { HomeView(viewModel: .init()) }
         }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView().environmentObject(UserSession())
 }

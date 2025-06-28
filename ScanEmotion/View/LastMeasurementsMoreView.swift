@@ -8,11 +8,16 @@
 import SwiftUI
 
 struct LastMeasurementsMoreView: View {
-   @StateObject var viewModel = LastMeasurementsMoreViewModel()
+    @StateObject var viewModel = LastMeasurementsMoreViewModel()
+    let measurement: [Measurement]
+    
+    init(measurement: [Measurement]) {
+        self.measurement = measurement
+    }
     
     var body: some View {
         ScrollView() {
-            ForEach(viewModel.measurements) { item in
+            ForEach(measurement) { item in
                 MeasurementCard(item: item, onItemPress: viewModel.onItemPress)
             }
         }.padding(20)

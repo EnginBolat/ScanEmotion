@@ -19,8 +19,8 @@ struct HomeMeasurementSectionView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(EdgeInsets(top: 24, leading: 0, bottom: 0, trailing: 0))
             
-            if data.count > 5 {
-                NavigationLink(destination: LastMeasurementsMoreView()) {
+            if data.count > 7 {
+                NavigationLink(destination: LastMeasurementsMoreView(measurement: data)) {
                     Text("Daha Fazla")
                         .fontWeight(.regular)
                         .font(.caption)
@@ -48,7 +48,7 @@ struct HomeMeasurementSectionView: View {
                 mainEmotion: MainEmotion(name: "Happy", value: 1.0)
             )
         ],
-        onItemPress: { measurement in print(measurement) }
+        onItemPress: { _ in }
     )
     .padding(AppConstants.padding)
 }
